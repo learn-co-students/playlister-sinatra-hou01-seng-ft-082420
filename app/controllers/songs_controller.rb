@@ -15,10 +15,16 @@ class SongsController < ApplicationController
     erb :'songs/show'
   end
 
-
   post "/songs" do
-    @artist = Artist.where("#{params[:name]} == name")
-    @song = Song.create(params)
+    @artist = Artist.where(name: params[:artist])
+    if @artist.length == 0
+      @artist = Artist.create(name: params[:artist])
+      @song = Song.create(name: params[:song_name], artist_id: @artist.id)
+    else
+      @song = Song.create(name: params[:song_name], artist_id: @artist.id) 
+    end
+    params[:genres].each {|genre| SongGenre.create(song_id: @song.id, genre_id: genre)}
+    redirect "/songs/#{@song.slug}"
   end
 
   patch "/songs/:slug/edit" do
